@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
-"""Beauty TikTok Workflow - Simplified Version (Python Only)"""
+"""Beauty TikTok Workflow - Simplified Version (OpenCV)"""
 
 import cv2
-import json
 import sys
 from pathlib import Path
 from tqdm import tqdm
@@ -30,7 +29,6 @@ def analyze_video(video_path):
             timestamp = frame_idx / fps
 
             if prev_frame is not None:
-                # Calculate motion
                 gray1 = cv2.cvtColor(prev_frame, cv2.COLOR_BGR2GRAY)
                 gray2 = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
                 flow = cv2.calcOpticalFlowFarneback(
@@ -39,7 +37,7 @@ def analyze_video(video_path):
                 magnitude, _ = cv2.cartToPolar(flow[..., 0], flow[..., 1])
                 motion = magnitude.mean()
 
-                if motion > 0.4:  # Motion threshold
+                if motion > 0.4:
                     hooks.append({
                         'timestamp': timestamp,
                         'motion': float(motion),
@@ -53,7 +51,6 @@ def analyze_video(video_path):
 
     cap.release()
 
-    # Sort by motion intensity
     hooks = sorted(hooks, key=lambda h: h['motion'], reverse=True)[:3]
 
     print(f"🎯 Found {len(hooks)} hooks:")
@@ -73,7 +70,6 @@ def extract_hook_frames(input_path, hook, fps, output_path):
 
     cap.set(cv2.CAP_PROP_POS_FRAMES, start_frame)
 
-    # Get first frame to determine size
     ret, first_frame = cap.read()
     if not ret:
         print("❌ Could not read first frame")
@@ -83,29 +79,46 @@ def extract_hook_frames(input_path, hook, fps, output_path):
     target_h = 1920
     target_w = 1080
 
-    # Create writer
-    fourcc = cv2.VideoWriter_fourcc(*'mp4v')
-    out = cv2.VideoWriter(output_path, fourcc, fps, (target_w, target_h))
+    print(f"   Input: {w}x{h}, Output: {target_w}x{target_h}")
+
+    # Try different codecs
+    codecs = ['mp4v', 'avc1', 'MJPG', 'DIVX']
+    out = None
+
+    for codec in codecs:
+        try:
+            fourcc = cv2.VideoWriter_fourcc(*codec)
+            out = cv2.VideoWriter(output_path, fourcc, fps, (target_w, target_h))
+            if out.isOpened():
+                print(f"   Using codec: {codec}")
+                break
+            out.release()
+        except Exception as e:
+            print(f"   Codec {codec} failed: {e}")
+            continue
+
+    if out is None or not out.isOpened():
+        print("❌ Could not initialize VideoWriter")
+        cap.release()
+        return False
 
     frames_to_extract = end_frame - start_frame
-
     print(f"   Extracting {frames_to_extract} frames...")
+
     for frame_count in tqdm(range(frames_to_extract), desc="Cutting"):
         ret, frame = cap.read()
         if not ret:
             break
 
-        # Resize to TikTok format (9:16)
+        # Resize to TikTok format
         aspect = w / h
         target_aspect = target_w / target_h
 
         if aspect > target_aspect:
-            # Width is relatively too large
             new_w = int(h * target_aspect)
             x_start = (w - new_w) // 2
             frame = frame[:, x_start:x_start + new_w]
         else:
-            # Height is relatively too large
             new_h = int(w / target_aspect)
             y_start = (h - new_h) // 2
             frame = frame[y_start:y_start + new_h, :]
@@ -116,8 +129,14 @@ def extract_hook_frames(input_path, hook, fps, output_path):
     cap.release()
     out.release()
 
-    print(f"✅ Hook extracted: {output_path}")
-    return True
+    # Verify file was created
+    if Path(output_path).exists():
+        size = Path(output_path).stat().st_size
+        print(f"✅ Hook extracted: {output_path} ({size / (1024*1024):.1f} MB)")
+        return True
+    else:
+        print(f"❌ Failed to write video file")
+        return False
 
 def main():
     input_video = "data/raw/beauty-video.mp4"
@@ -131,10 +150,8 @@ def main():
 
     print("🚀 Beauty TikTok Auto-Workflow\n")
 
-    # Step 1: Analyze
     hooks, duration, fps = analyze_video(input_video)
 
-    # Step 2: Extract hook
     if hooks:
         success = extract_hook_frames(input_video, hooks[0], fps, output_video)
     else:
@@ -142,13 +159,16 @@ def main():
         hook = {'start': 0, 'end': min(10, duration)}
         success = extract_hook_frames(input_video, hook, fps, output_video)
 
-    # Step 3: Summary
     if success:
         print(f"\n{'='*50}")
         print(f"✨ Fertig!")
         print(f"📍 Output: {output_video}")
         print(f"📱 Format: 1080x1920 (9:16 TikTok)")
         print(f"{'='*50}")
+
+        # Open in Finder
+        import os
+        os.system(f"open {Path(output_video).parent}")
     else:
         print("❌ Failed to create video")
         sys.exit(1)
