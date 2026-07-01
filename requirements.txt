@@ -5,3 +5,8 @@ Pillow>=10.0.0
 click>=8.1.0
 python-dotenv>=1.0.0
 tqdm>=4.66.0
+
+# Google Drive (optional, kostenlos)
+google-auth-oauthlib>=1.0.0
+google-auth-httplib2>=0.2.0
+google-api-python-client>=2.80.0
