@@ -1,0 +1,37 @@
+{
+  "tiktok": {
+    "width": 1080,
+    "height": 1920,
+    "fps": 30,
+    "bitrate": "8M",
+    "aspect_ratio": "9:16"
+  },
+  "hook_detection": {
+    "min_length": 1.0,
+    "max_length": 3.0,
+    "motion_threshold": 0.4,
+    "scene_change_threshold": 25.0,
+    "detectors": ["scene_change", "motion", "face_expression", "hand_movement"]
+  },
+  "video_editing": {
+    "max_video_length": 300,
+    "transition_duration": 0.3,
+    "enable_effects": true,
+    "enable_captions": true
+  },
+  "metadata": {
+    "auto_hashtags": true,
+    "include_emojis": true,
+    "beauty_keywords": ["makeup", "skincare", "beauty", "tutorial", "transformation", "tips"]
+  },
+  "processing": {
+    "parallel_processing": false,
+    "cleanup_temp_files": true,
+    "keep_original": true
+  },
+  "export": {
+    "format": "mp4",
+    "export_to_capcut": true,
+    "auto_upload_drive": true
+  }
+}
