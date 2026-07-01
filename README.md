@@ -1,81 +1,126 @@
-# Beauty TikTok Auto-Workflow
+# Beauty TikTok Shorts Workflow
 
-Automatisierter Workflow zum Schneiden und Optimieren von Beauty-Videos für TikTok — mit Hook-Erkennung, Auto-Schnitt und viraler Optimierung.
+Automatisierter Workflow: Rohmaterial → TikTok-Ready Videos (mit Hooks + Hashtags)
 
-## Features
+**Keine Google Cloud nötig. Keine API-Keys. 100% KOSTENLOS!** ✅
 
-- 🎬 **Hook-Erkennung**: Findet die besten 1-3 Sekunden für maximales Engagement
-- ✂️ **Auto-Schnitt**: TikTok-optimierte Schnitte (9:16, schnell, viral-gerecht)
-- 💬 **Text-Overlays**: Automatische Captions & Emojis (Beauty-spezifisch)
-- 📱 **CapCut-Export**: Fertig zum Upload in CapCut oder direkt exportieren
-- ☁️ **Google Drive Integration**: Automatisches Abrufen & Speichern
-- 📊 **Metadaten**: Auto-generierte Hashtags & Beschreibungen
+---
 
-## Quick Start
+## 🚀 Quick Start (2 Minuten!)
 
+### 1. Dependencies installieren
 ```bash
-# 1. Dependencies installieren
-pip install -r requirements.txt
-
-# 2. Google Drive verbinden (siehe Setup)
-cp config/.env.example .env
-# Trage deine Google Drive API-Keys ein
-
-# 3. Test-Video verarbeiten
-python src/main.py --input data/raw/sample.mp4
-
-# 4. Ergebnis in CapCut öffnen
-open data/processed/output.capcut
+pip3 install -r requirements.txt
 ```
 
-## Struktur
+### 2. Clips speichern
+```bash
+# Deine Videos hier:
+~/Projects/beauty-tiktok-workflow/data/raw/
+
+# Einfach deine .mp4 Dateien reincopieren!
+```
+
+### 3. Programm starten
+```bash
+cd ~/Projects/beauty-tiktok-workflow
+python3 tiktok_shorts_processor.py
+```
+
+### 4. Fertig!
+```
+data/processed/
+├── short_001.mp4          ← Optimiert für TikTok
+├── short_001.txt          ← Description (copy-paste ready!)
+├── short_002.mp4
+├── short_002.txt
+└── metadata.json
+```
+
+---
+
+## 📋 Was passiert automatisch?
+
+✅ **Phase 1:** Clips erkennen
+✅ **Phase 2:** In 1080x1920 (9:16 TikTok Format) konvertieren
+✅ **Phase 3:** Helligkeit/Kontrast optimieren
+✅ **Phase 4:** Virale Hooks generieren
+✅ **Phase 5:** Hashtags + Tipps generieren
+
+**Alles copy-paste ready für TikTok!**
+
+---
+
+## 📁 Folder-Struktur
 
 ```
-.
-├── src/                    # Python Scripts
-│   ├── main.py            # Hauptprogramm
-│   ├── hook_detector.py   # Hook-Erkennung
-│   ├── video_editor.py    # Auto-Schnitt
-│   ├── google_drive.py    # Drive API
-│   └── metadata.py        # Metadaten-Generator
-├── config/
-│   ├── settings.json      # Globale Einstellungen
-│   └── beauty_prompts.txt # Beauty-spezifische Erkennungen
-├── templates/             # CapCut & Overlay Templates
+beauty-tiktok-workflow/
 ├── data/
-│   ├── raw/              # Rohmaterial (Google Drive)
-│   └── processed/        # Fertige Videos
-└── tests/                # Unit Tests
+│   ├── raw/              ← DEINE CLIPS HIER REIN
+│   │   ├── clip_1.mp4
+│   │   └── clip_2.mp4
+│   └── processed/        ← FERTIGE VIDEOS HIER RAUS
+│       ├── short_001.mp4
+│       ├── short_001.txt
+│       └── metadata.json
+├── tiktok_shorts_processor.py
+├── QUICK_START.md
+└── GOOGLE_DRIVE_EASY_FREE.md
 ```
 
-## Setup-Anleitung
+---
 
-### 1. Google Drive API
-1. Gehe zu [Google Cloud Console](https://console.cloud.google.com)
-2. Neues Projekt erstellen
-3. Google Drive API aktivieren
-4. Service Account erstellen
-5. JSON-Key herunterladen → `config/google-credentials.json`
+## 💡 Google Drive Option
 
-### 2. Environment-Variablen
+Willst du Videos direkt von Google Drive verarbeiten?
+
+👉 Siehe: **GOOGLE_DRIVE_EASY_FREE.md** (auch kostenlos!)
+
+---
+
+## 📊 Workflow-Ausgabe
+
+Jedes Video bekommt automatisch:
+
+```
+DESCRIPTION:
+Warte bis zum Ende, das Ergebnis ist KRASS! ✨
+
+HASHTAGS:
+#BeautyCommunity #TikTok #Viral #FYP #ForYou
+
+TIP:
+📱 Use trending sounds for 40% more views
+```
+
+**Einfach kopieren & auf TikTok posten!** 📱
+
+---
+
+## 🔄 Skalierung
+
+```
+Tag 1: 2 Videos → 2 Shorts
+Tag 2: 5 Videos → 5 Shorts
+Tag 3: 10 Videos → 10 Shorts
+...
+
+Alles automatisch! 🤖
+```
+
+---
+
+## ❓ Fragen?
+
+Siehe die Docs:
+- **QUICK_START.md** — 3-Schritt Übersicht
+- **GOOGLE_DRIVE_EASY_FREE.md** — Kostenlose Cloud-Option
+- **SHORTS_WORKFLOW.md** — Detaillierter Workflow
+
+---
+
+**Bereit? Los geht's!** 🚀
+
 ```bash
-cp config/.env.example .env
-# Editiere .env mit deinen Credentials
+python3 tiktok_shorts_processor.py
 ```
-
-### 3. CapCut Templates
-- Platziere deine liebsten CapCut-Vorlagen in `templates/`
-- Der Workflow wird diese automatisch verwenden
-
-## Roadmap
-
-- [ ] Phase 1: Google Drive API + Basis-Struktur
-- [ ] Phase 2: Hook-Erkennung (Szenen, Schnitte, Reaktionen)
-- [ ] Phase 3: Auto-Schnitt & TikTok-Optimierung
-- [ ] Phase 4: CapCut-Export Automation
-- [ ] Phase 5: Google Drive Watcher (Auto-Processing)
-- [ ] Phase 6: Metadaten-Generator (Tags, Captions)
-
-## Support
-
-Brauchst du Hilfe? Öffne ein Issue oder kontaktiere mich!
