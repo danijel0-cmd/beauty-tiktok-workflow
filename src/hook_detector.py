@@ -4,7 +4,6 @@ import cv2
 import numpy as np
 import logging
 from typing import List, Dict
-import mediapipe as mp
 
 logger = logging.getLogger(__name__)
 
@@ -19,15 +18,8 @@ class HookDetector:
         self.motion_threshold = config.get('hook_detection', {}).get('motion_threshold', 0.4)
         self.scene_threshold = config.get('hook_detection', {}).get('scene_change_threshold', 25.0)
 
-        # MediaPipe for face detection
-        self.mp_face = mp.solutions.face_detection
-        self.face_detector = self.mp_face.FaceDetection(
-            model_selection=1,
-            min_detection_confidence=0.5
-        )
-
     def detect_hooks(self, video_path: str) -> List[Dict]:
-        """Detect potential hooks in a video"""
+        """Detect potential hooks in a video using motion detection"""
         cap = cv2.VideoCapture(video_path)
 
         fps = cap.get(cv2.CAP_PROP_FPS)
@@ -38,39 +30,31 @@ class HookDetector:
 
         hooks = []
         prev_frame = None
-        scene_changes = []
-
         frame_idx = 0
+        sample_rate = max(1, int(fps / 2))  # Check every 0.5s
 
         while cap.isOpened() and frame_idx < total_frames:
             ret, frame = cap.read()
             if not ret:
                 break
 
+            if frame_idx % sample_rate != 0:
+                frame_idx += 1
+                continue
+
             timestamp = frame_idx / fps
 
-            # Detect scene changes
+            # Detect motion/scene changes
             if prev_frame is not None:
-                flow = self._detect_motion(prev_frame, frame)
-                if flow > self.motion_threshold:
-                    scene_changes.append({
-                        'timestamp': timestamp,
-                        'motion': flow
+                motion = self._detect_motion(prev_frame, frame)
+                if motion > self.motion_threshold:
+                    hooks.append({
+                        'start': max(0, timestamp - 1.0),
+                        'end': min(duration, timestamp + 2.0),
+                        'confidence': min(motion / 5.0, 1.0),
+                        'type': 'motion',
+                        'timestamp': timestamp
                     })
-
-            # Detect face expressions/attention
-            faces = self._detect_faces(frame)
-            if faces and len(faces) > 0:
-                for face in faces:
-                    confidence = face.get('confidence', 0)
-                    if confidence > 0.7:
-                        hooks.append({
-                            'start': max(0, timestamp - 0.5),
-                            'end': min(duration, timestamp + 2.0),
-                            'confidence': confidence,
-                            'type': 'face_attention',
-                            'timestamp': timestamp
-                        })
 
             prev_frame = frame.copy()
             frame_idx += 1
@@ -102,22 +86,6 @@ class HookDetector:
         magnitude, _ = cv2.cartToPolar(flow[..., 0], flow[..., 1])
         return np.mean(magnitude)
 
-    def _detect_faces(self, frame: np.ndarray) -> List[Dict]:
-        """Detect faces and eye gaze using MediaPipe"""
-        rgb_frame = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
-        results = self.face_detector.process(rgb_frame)
-
-        faces = []
-        if results.detections:
-            for detection in results.detections:
-                faces.append({
-                    'confidence': detection.score[0],
-                    'bbox': detection.location_data.bounding_box if hasattr(
-                        detection.location_data, 'bounding_box'
-                    ) else None
-                })
-
-        return faces
 
     def _merge_overlapping_hooks(self, hooks: List[Dict]) -> List[Dict]:
         """Merge overlapping hook timestamps"""

@@ -9,11 +9,17 @@ import logging
 from pathlib import Path
 from dotenv import load_dotenv
 
-from google_drive import GoogleDriveManager
 from hook_detector import HookDetector
 from video_editor import VideoEditor
 from metadata import MetadataGenerator
 from utils import setup_logging, load_config
+
+try:
+    from google_drive import GoogleDriveManager
+    HAS_GOOGLE_DRIVE = True
+except ImportError:
+    HAS_GOOGLE_DRIVE = False
+    GoogleDriveManager = None
 
 load_dotenv()
 setup_logging()
@@ -23,7 +29,7 @@ logger = logging.getLogger(__name__)
 class BeautyTikTokWorkflow:
     def __init__(self):
         self.config = load_config()
-        self.drive_manager = GoogleDriveManager()
+        self.drive_manager = GoogleDriveManager() if HAS_GOOGLE_DRIVE else None
         self.hook_detector = HookDetector(self.config)
         self.video_editor = VideoEditor(self.config)
         self.metadata_gen = MetadataGenerator(self.config)
@@ -66,6 +72,10 @@ class BeautyTikTokWorkflow:
 
     def process_from_drive(self, folder_id: str = None) -> list:
         """Process all videos from Google Drive folder."""
+        if not HAS_GOOGLE_DRIVE:
+            logger.error("Google Drive not available. Install with: pip3 install google-auth-oauthlib google-api-python-client")
+            return []
+
         if folder_id is None:
             folder_id = os.getenv("GOOGLE_DRIVE_FOLDER_ID")
 
